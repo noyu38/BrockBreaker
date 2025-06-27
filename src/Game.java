@@ -287,6 +287,9 @@ public class Game {
                 exitButton.setVisible(false);
                 if (startButton != null) startButton.setVisible(false);
             }
+            default -> {
+                return;
+            }
         }
     }
 
