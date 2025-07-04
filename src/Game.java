@@ -122,7 +122,8 @@ public class Game {
     }
 
     private void update() {
-        if (state != GameState.PLAYING) return;
+        if (state != GameState.PLAYING)
+            return;
 
         if (leftPressed)
             paddle.moveLeft();
@@ -139,12 +140,53 @@ public class Game {
 
         // パドルと衝突したら向きを反転
         if (paddle.intersects(ball)) {
-            ball.reverseY();
+
+            // ボールの中心とパドルの中心の座標
+            double ballCenterX = ball.getX() + Ball.SIZE / 2.0;
+            double ballCenterY = ball.getY() + Ball.SIZE / 2.0;
+            double paddleCenterX = paddle.getX() + Paddle.WIDTH / 2.0;
+            double paddleCenterY = paddle.getY() + Paddle.HEIGHT / 2.0;
+
+            // 中心間の距離
+            double dx = Math.abs(ballCenterX - paddleCenterX);
+            double dy = Math.abs(ballCenterY - paddleCenterY);
+
+            double combinedHalfWidth = (Ball.SIZE + Paddle.WIDTH) / 2.0;
+            double combinedHalfHeight = (Ball.SIZE + Paddle.HEIGHT) / 2.0;
+
+            if (combinedHalfWidth * dy > combinedHalfHeight * dx) {
+                ball.reverseY();
+                ball.setY(paddle.getY() - Ball.SIZE);
+
+                double paddleSpeed = paddle.getX() - prevPaddleX;
+                if (paddleSpeed != 0) {
+                    ball.addSpin(paddleSpeed * 0.3);
+                }
+
+                if (Math.abs(ball.getDx()) < 0.1) {
+                    double nudge = (Math.random() - 0.5) * 0.5;
+                    ball.addSpin(nudge);
+                }
+            } else {
+                ball.reverseX();
+                if (ballCenterX < paddleCenterX) {
+                    ball.setX(paddle.getX() - Ball.SIZE);
+                } else {
+                    ball.setX(paddle.getX() + Paddle.WIDTH);
+                }
+            }
 
             double paddleSpeed = paddle.getX() - prevPaddleX;
 
-            if (paddleSpeed != 0)
+            if (paddleSpeed != 0) {
                 ball.addSpin(paddleSpeed * 0.3);
+            }
+
+            // ボールのdxがあまりにも小さい場合は水平方向へのスピンを追加させる
+            if (Math.abs(ball.getDx()) < 0.1) {
+                double nudge = (Math.random() - 0.5) * 0.5;
+                ball.addSpin(nudge);
+            }
         }
 
         // ブロックと衝突したときの操作
@@ -205,7 +247,6 @@ public class Game {
             delay.play();
         }
     }
-
 
     private void render() {
         gc.setFill(Color.BLACK);
@@ -275,7 +316,8 @@ public class Game {
         switch (state) {
             case START -> {
                 state = GameState.PLAYING;
-                if (startButton != null) startButton.setVisible(false);
+                if (startButton != null)
+                    startButton.setVisible(false);
             }
             case GAME_OVER -> {
                 score = 0;
@@ -285,7 +327,8 @@ public class Game {
                 state = GameState.PLAYING;
                 restartButton.setVisible(false);
                 exitButton.setVisible(false);
-                if (startButton != null) startButton.setVisible(false);
+                if (startButton != null)
+                    startButton.setVisible(false);
             }
             default -> {
                 return;
